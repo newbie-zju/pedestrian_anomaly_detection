@@ -3,7 +3,6 @@
   <!--<include file="$(find video_publisher_py)/launch/video_publisher_py_node.launch"/>-->
   <include file="$(find pedstrian_detection)/launch/pedstrian_detection.launch"/>
   <include file="$(find alarm_setting_decision)/launch/alarm_setting_decision.launch"/>
-  <!--include file="$(find hk_control)/launch/hk_control.launch"/-->
-  <!--<node pkg="joy" type="joy_node" name="joy_node"/>-->
+  <include file="$(find hk_control)/launch/hk_control.launch"/>
 </launch>
 
