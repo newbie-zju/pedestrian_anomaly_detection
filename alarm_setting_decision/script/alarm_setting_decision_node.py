@@ -92,7 +92,7 @@ class TrackingDecision(object):
             tmp_alarm_box.xmax_normal = float(tmp_alarm_box.xmax) / self.image_width
             if len(self.alarm_boxes) < self.max_alarm_box_number:
                 self.alarm_boxes.append(tmp_alarm_box)
-        if event == cv2.EVENT_RBUTTONUP:
+        if event == cv2.EVENT_LBUTTONDBLCLK:
             self.alarm_boxes = []
 
     def box_callback(self, msg):
