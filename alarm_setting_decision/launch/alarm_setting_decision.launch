@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="alarm_setting_decision" name="alarm_setting_decision_node" type="alarm_setting_decision_node.py" output="screen" respawn="true">
+    </node>
+</launch>
