@@ -36,6 +36,7 @@ class TrackingDecision(object):
     cur_pt = np.zeros(2, np.int32)
     alarm_boxes = []
     person_boxes = []
+    draw_tmp_box = False
 
     def __init__(self):
         # node
@@ -64,6 +65,8 @@ class TrackingDecision(object):
         self.alarm_decision()
 
     def draw_boxes(self):
+        if self.draw_tmp_box:
+            cv2.rectangle(self.src, tuple(self.pre_pt), tuple(self.end_pt), (0, 0, 255), 2)
         for box in self.alarm_boxes:
             cv2.rectangle(self.src, tuple([box.xmin, box.ymin]), tuple([box.xmax, box.ymax]), (0, 0, 255), 2)
         for box in self.person_boxes:
@@ -74,11 +77,10 @@ class TrackingDecision(object):
         if event == cv2.EVENT_LBUTTONDOWN:
             self.pre_pt = np.array([x, y], np.int32)
         if flags == cv2.EVENT_FLAG_LBUTTON:
+            self.draw_tmp_box = True
             self.end_pt = self.cur_pt
-            cv2.rectangle(self.src, tuple(self.pre_pt), tuple(self.end_pt), (0, 0, 255), 2)
-            cv2.imshow('img', self.src)
-            cv2.waitKey(1)
         if event == cv2.EVENT_LBUTTONUP:
+            self.draw_tmp_box = False
             tmp_alarm_box = BoundingBox()
             tmp_alarm_box.ymin = min(self.pre_pt[1], self.end_pt[1])
             tmp_alarm_box.xmin = min(self.pre_pt[0], self.end_pt[0])
