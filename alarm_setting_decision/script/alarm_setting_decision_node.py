@@ -90,8 +90,9 @@ class TrackingDecision(object):
             tmp_alarm_box.xmin_normal = float(tmp_alarm_box.xmin) / self.image_width
             tmp_alarm_box.ymax_normal = float(tmp_alarm_box.ymax) / self.image_hight
             tmp_alarm_box.xmax_normal = float(tmp_alarm_box.xmax) / self.image_width
-            if len(self.alarm_boxes) < self.max_alarm_box_number:
-                self.alarm_boxes.append(tmp_alarm_box)
+            if tmp_alarm_box.xmax - tmp_alarm_box.xmin > 2 and tmp_alarm_box.xmax - tmp_alarm_box.xmin > 2:
+                if len(self.alarm_boxes) < self.max_alarm_box_number:
+                    self.alarm_boxes.append(tmp_alarm_box)
         if event == cv2.EVENT_LBUTTONDBLCLK:
             self.alarm_boxes = []
 
