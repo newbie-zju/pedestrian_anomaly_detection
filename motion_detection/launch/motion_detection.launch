@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="motion_detection" name="motion_detection_node" type="motion_detection_node.py" output="screen" respawn="true">
+    </node>
+</launch>
