@@ -2,6 +2,6 @@
   <include file="$(find hk_video_publisher)/launch/hk_video_publisher.launch"/>
   <!--<include file="$(find video_publisher_py)/launch/video_publisher_py_node.launch"/>-->
   <include file="$(find motion_detection)/launch/motion_detection.launch"/>
-  <include file="$(find hk_control)/launch/hk_control.launch"/>
+  <!--include file="$(find hk_control)/launch/hk_control_zj.launch"/-->
 </launch>
 

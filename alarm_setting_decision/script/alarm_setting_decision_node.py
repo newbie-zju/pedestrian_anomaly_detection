@@ -3,6 +3,7 @@
 from pdt_msgs.msg import BoundingBox
 from pdt_msgs.msg import BoundingBoxes
 from sensor_msgs.msg import Image
+from std_msgs.msg import Bool
 import os
 import pygame
 import time
@@ -16,13 +17,16 @@ class TrackingDecision(object):
     # parameters need to modify
     box_sub_topic = '/pedstrian_bboxes'
     image_sub_topic = '/hk_video'
+    run_alarm_topic = '/hk_mode'
     # alarm_interval_sec = 30
-    alarm_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'alarm.mp3')
+    # alarm_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'alarm.mp3')
+    alarm_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'music/危险区域.mp3')
     max_alarm_box_number = 5
 
     # parameters do not need to modify
     # box_sub = rospy.Subscriber()
     # decision_pub = rospy.Publisher()
+    run_alarm = False
     image_hight = -1
     image_width = -1
     is_first_frame = True
@@ -41,7 +45,11 @@ class TrackingDecision(object):
     def __init__(self):
         # node
         self.box_sub = rospy.Subscriber(self.box_sub_topic, BoundingBoxes, self.box_callback, queue_size=1)
+        self.run_alarm_sub = rospy.Subscriber(self.run_alarm_topic, Bool, self.run_alarm_callback, queue_size=1)
         self.image_sub = rospy.Subscriber(self.image_sub_topic, Image, self.image_callback, queue_size=1)
+
+    def run_alarm_callback(self, msg):
+        self.run_alarm = msg.data
 
     def image_callback(self, msg):
         try:
@@ -100,6 +108,8 @@ class TrackingDecision(object):
         self.person_boxes = self.get_person_box(msg.bboxes)
 
     def alarm_decision(self):
+        if self.run_alarm == False:
+            return
         for alarm_box in self.alarm_boxes:
             for person_box in self.person_boxes:
                 if self.boxes_intersect(alarm_box, person_box):
@@ -135,7 +145,7 @@ def play_alarm(td):
             pygame.mixer.init()
             pygame.mixer.music.load(td.alarm_file)
             pygame.mixer.music.play()
-            time.sleep(2)
+            time.sleep(3)
             pygame.mixer.music.stop()
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from sensor_msgs.msg import Image
+from std_msgs.msg import Bool
 import os
 import pygame
 import time
@@ -14,15 +15,20 @@ from pdt_msgs.msg import BoundingBox
 class MotionDetection(object):
     # parameters need to modify
     image_sub_topic = '/hk_video'
+    run_alarm_topic = '/hk_mode'
     # alarm_interval_sec = 30
-    alarm_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'alarm.mp3')
+    # alarm_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'alarm.mp3')
+    alarm_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'music/高度超过限制.mp3')
     # alarm_threshold = 0.1
-    alarm_pixel_num = 1000
+    alarm_pixel_num = 100
     front_pixel_threshold = 50
+    set_mode = False
 
     # parameters do not need to modify
     # box_sub = rospy.Subscriber()
     # decision_pub = rospy.Publisher()
+    run_alarm = False
+    run_alarm_last = False
     WINDOWNAME = "motion_detection"
     image_hight = -1
     image_width = -1
@@ -47,6 +53,19 @@ class MotionDetection(object):
     def __init__(self):
         # node
         self.image_sub = rospy.Subscriber(self.image_sub_topic, Image, self.image_callback, queue_size=1)
+        self.run_alarm_sub = rospy.Subscriber(self.run_alarm_topic, Bool, self.run_alarm_callback, queue_size=1)
+        #init box
+        tmp_alarm_box = BoundingBox()
+        tmp_alarm_box.xmin = 212
+        tmp_alarm_box.ymin = 139
+        tmp_alarm_box.xmax = 850
+        tmp_alarm_box.ymax = 205
+        self.alarm_box = [tmp_alarm_box]
+        #self.set_background = True
+        #init box end
+
+    def run_alarm_callback(self, msg):
+        self.run_alarm = msg.data
 
     def image_callback(self, msg):
         try:
@@ -62,6 +81,9 @@ class MotionDetection(object):
         # cv2.namedWindow(self.WINDOWNAME)
         cv2.setMouseCallback(self.WINDOWNAME, self.on_mouse, 0)
 
+        if self.run_alarm_last == False and self.run_alarm == True:
+            self.set_background = True
+
         if self.set_background:
             self.set_background = False
             self.background = self.crop_trans_image(self.background)
@@ -71,14 +93,15 @@ class MotionDetection(object):
             self.alarm_src_image = self.crop_trans_image(self.alarm_src_image)
             self.diff = cv2.absdiff(self.background, self.alarm_src_image)
             self.diff = cv2.threshold(self.diff, self.front_pixel_threshold, 1, cv2.THRESH_BINARY)[1]
-            # cv2.imshow("diff", self.diff*255)
-            # cv2.waitKey(1)
+            cv2.imshow("diff", self.diff*255)
+            cv2.waitKey(1)
 
         self.draw_boxes()
         cv2.imshow(self.WINDOWNAME, self.src)
         cv2.waitKey(1)
 
         self.alarm_decision()
+        self.run_alarm_last = self.run_alarm
 
     def crop_trans_image(self, image):
         image = cv2.cvtColor(self.src, cv2.COLOR_BGR2GRAY)
@@ -113,17 +136,20 @@ class MotionDetection(object):
             if tmp_alarm_box.xmax - tmp_alarm_box.xmin > 2 and tmp_alarm_box.xmax - tmp_alarm_box.xmin > 2:
                 self.alarm_box = [tmp_alarm_box]
                 self.set_background = True
-                # print(tmp_alarm_box)
+                print(tmp_alarm_box)
         if event == cv2.EVENT_LBUTTONDBLCLK:
             self.alarm_box = []
             self.run_detection = False
             cv2.destroyWindow("diff")
 
     def alarm_decision(self):
+        if self.run_alarm == False and self.set_mode == False:
+            return
+
         if self.run_detection:
             # if float(self.diff.sum()) / (self.diff.shape[0] * self.diff.shape[1]) > self.alarm_threshold:
             #     self.alarm_begin = True
-            # print(self.diff.sum())
+            print(self.diff.sum())
             if self.diff.sum() > self.alarm_pixel_num:
                 self.alarm_begin = True
 
